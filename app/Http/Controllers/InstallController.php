@@ -154,6 +154,16 @@ class InstallController extends Controller
                     ])
                     ->withInput();
             }
+
+            // Validate admin email uniqueness after we have a working DB connection.
+            // During first-run install, the request validation can't safely query the DB because the
+            // connection details are coming from the same POST body.
+            $adminEmail = $request->string('admin_email')->toString();
+            if (! $existingBootstrapUserId && User::query()->where('email', $adminEmail)->exists()) {
+                return back()
+                    ->withErrors(['admin_email' => 'The admin email has already been taken.'])
+                    ->withInput();
+            }
         } catch (Throwable $e) {
             // If tables don't exist yet, we'll create them below.
         }
@@ -202,6 +212,10 @@ class InstallController extends Controller
         // Persist env changes last (best-effort).
         try {
             EnvEditor::setMany($envUpdates);
+
+            // In production, config is often cached. Make sure the next request reads fresh `.env`.
+            // Best-effort: if the environment disallows this, the install still succeeds for this request.
+            Artisan::call('config:clear');
         } catch (Throwable) {
             // Ignore; runtime config + app settings are already persisted.
         }

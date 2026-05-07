@@ -3,8 +3,6 @@
 namespace App\Http\Requests\Install;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\Rule;
 
 class InstallRequest extends FormRequest
 {
@@ -15,13 +13,6 @@ class InstallRequest extends FormRequest
 
     public function rules(): array
     {
-        $adminEmailRules = ['required', 'email', 'max:255'];
-        // During first-run install, migrations may not have been executed yet.
-        // Avoid querying a missing `users` table during validation.
-        if (Schema::hasTable('users')) {
-            $adminEmailRules[] = Rule::unique('users', 'email');
-        }
-
         return [
             'language' => ['required', 'string', 'in:en,bn'],
 
@@ -39,7 +30,9 @@ class InstallRequest extends FormRequest
             'db_password' => ['nullable', 'string', 'max:255'],
 
             'admin_name' => ['required', 'string', 'max:255'],
-            'admin_email' => $adminEmailRules,
+            // Don't touch DB during install validation: connection details come from this same request.
+            // Uniqueness is validated later in the controller after we apply DB config.
+            'admin_email' => ['required', 'email', 'max:255'],
             'admin_password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
         ];
     }
