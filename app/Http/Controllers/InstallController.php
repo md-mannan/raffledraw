@@ -204,7 +204,7 @@ class InstallController extends Controller
                 return $u;
             }
 
-            return User::query()->create($payload);
+            return User::query()->forceCreate($payload);
         });
 
         Auth::login($user);

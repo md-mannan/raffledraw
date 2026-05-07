@@ -13,8 +13,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('super_admin', fn (?User $user) => ($user?->role === 'super_admin'));
-        Gate::define('admin', fn (?User $user) => in_array($user?->role, ['super_admin', 'admin'], true));
+        Gate::define('super_admin', fn (?User $user) => ($user?->role === 'super_admin') || (($user?->is_admin ?? false) === true));
+        Gate::define('admin', fn (?User $user) => in_array($user?->role, ['super_admin', 'admin'], true) || (($user?->is_admin ?? false) === true));
     }
 }
 
