@@ -23,7 +23,6 @@ export default function SomitiEdit({
     };
     sounds: {
         options: { path: string; name: string; url: string }[];
-        defaults: { spin: string; celebration: string };
     };
 }) {
     return (
@@ -86,7 +85,7 @@ export default function SomitiEdit({
                                                     defaultValue={somiti.spin_sound_path ?? ''}
                                                     className="h-10 w-full rounded-md border bg-background px-3 text-sm"
                                                 >
-                                                    <option value="">Default</option>
+                                                <option value="">None</option>
                                                     {sounds.options.map((s) => (
                                                         <option key={s.path} value={s.path}>
                                                             {s.name}
@@ -119,7 +118,7 @@ export default function SomitiEdit({
                                                     defaultValue={somiti.celebration_sound_path ?? ''}
                                                     className="h-10 w-full rounded-md border bg-background px-3 text-sm"
                                                 >
-                                                    <option value="">Default</option>
+                                                <option value="">None</option>
                                                     {sounds.options.map((s) => (
                                                         <option key={s.path} value={s.path}>
                                                             {s.name}

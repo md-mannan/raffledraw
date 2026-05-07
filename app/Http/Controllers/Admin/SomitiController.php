@@ -20,11 +20,6 @@ use Inertia\Response;
 
 class SomitiController extends Controller
 {
-    protected function publicStorageUrl(string $path): string
-    {
-        return '/storage/'.ltrim($path, '/');
-    }
-
     public function index(Request $request): Response
     {
         $q = trim((string) $request->string('q'));
@@ -131,19 +126,8 @@ class SomitiController extends Controller
 
     public function edit(Somiti $somiti): Response
     {
-        // Ensure default sounds exist in public storage (storage/app/public/audio)
-        // so everything is selectable from the same folder.
         $publicDisk = Storage::disk('public');
         $publicDisk->makeDirectory('audio');
-
-        foreach ([
-            ['public' => public_path('audio/spin.mp3'), 'target' => 'audio/spin.mp3'],
-            ['public' => public_path('audio/applause.mp3'), 'target' => 'audio/applause.mp3'],
-        ] as $f) {
-            if (! $publicDisk->exists($f['target']) && is_file($f['public'])) {
-                $publicDisk->put($f['target'], file_get_contents($f['public']));
-            }
-        }
 
         $soundFiles = collect($publicDisk->files('audio'))
             ->filter(fn (string $p) => preg_match('/\.(mp3|wav|ogg)$/i', $p))
@@ -151,7 +135,7 @@ class SomitiController extends Controller
             ->map(fn (string $p) => [
                 'path' => $p,
                 'name' => basename($p),
-                'url' => $this->publicStorageUrl($p),
+                'url' => '/storage/'.ltrim($p, '/'),
             ]);
 
         return Inertia::render('somitis/edit', [
@@ -165,14 +149,6 @@ class SomitiController extends Controller
             ],
             'sounds' => [
                 'options' => $soundFiles,
-                'defaults' => [
-                    'spin' => $publicDisk->exists('audio/spin.mp3')
-                        ? $this->publicStorageUrl('audio/spin.mp3')
-                        : '/audio/spin.mp3',
-                    'celebration' => $publicDisk->exists('audio/applause.mp3')
-                        ? $this->publicStorageUrl('audio/applause.mp3')
-                        : '/audio/applause.mp3',
-                ],
             ],
         ]);
     }

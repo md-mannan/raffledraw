@@ -20,11 +20,6 @@ use Inertia\Response;
 
 class DrawController extends Controller
 {
-    protected function publicStorageUrl(string $path): string
-    {
-        return '/storage/'.ltrim($path, '/');
-    }
-
     public function index(Request $request, Somiti $somiti): Response
     {
         $draws = Draw::query()
@@ -61,18 +56,16 @@ class DrawController extends Controller
 
         $publicDisk = Storage::disk('public');
 
-        // Avoid relying on APP_URL for generated asset URLs in production (mixed-content / wrong domain).
-        // Serve via relative paths: /storage/... (preferred) or /audio/... (fallback).
-        $spinPath = $somiti->spin_sound_path ?: 'audio/spin.mp3';
-        $celebrationPath = $somiti->celebration_sound_path ?: 'audio/applause.mp3';
+        // Upload-only sounds: if not configured (or missing), return null so the UI won't try to play audio.
+        $spinUrl = null;
+        if ($somiti->spin_sound_path && $publicDisk->exists($somiti->spin_sound_path)) {
+            $spinUrl = '/storage/'.ltrim($somiti->spin_sound_path, '/');
+        }
 
-        $spinUrl = $publicDisk->exists($spinPath)
-            ? $this->publicStorageUrl($spinPath)
-            : '/audio/spin.mp3';
-
-        $celebrationUrl = $publicDisk->exists($celebrationPath)
-            ? $this->publicStorageUrl($celebrationPath)
-            : '/audio/applause.mp3';
+        $celebrationUrl = null;
+        if ($somiti->celebration_sound_path && $publicDisk->exists($somiti->celebration_sound_path)) {
+            $celebrationUrl = '/storage/'.ltrim($somiti->celebration_sound_path, '/');
+        }
 
         return Inertia::render('draws/show', [
             'somiti' => [

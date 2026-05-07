@@ -55,7 +55,7 @@ export default function WheelDrawModal({
     currency: string;
     entrants: Entrant[];
     winnerId: number;
-    spinSoundUrl: string;
+    spinSoundUrl: string | null;
     onFinished: () => void;
     onOpenChange: (v: boolean) => void;
 }) {
@@ -74,6 +74,7 @@ export default function WheelDrawModal({
     useEffect(() => {
         if (!open) return;
         if (spinAudioRef.current) return;
+        if (!spinSoundUrl) return;
         const a = new Audio(spinSoundUrl);
         a.loop = true;
         a.preload = 'auto';

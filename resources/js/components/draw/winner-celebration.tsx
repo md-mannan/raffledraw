@@ -52,7 +52,7 @@ export default function WinnerCelebration({
     winnerName: string;
     amount: number;
     currency: string;
-    soundUrl: string;
+    soundUrl: string | null;
     onClose: () => void;
 }) {
     const [mounted, setMounted] = useState(false);
@@ -64,6 +64,7 @@ export default function WinnerCelebration({
     useEffect(() => {
         if (!mounted) return;
         if (applauseRef.current) return;
+        if (!soundUrl) return;
         const a = new Audio(soundUrl);
         a.preload = 'auto';
         a.volume = 0.8;

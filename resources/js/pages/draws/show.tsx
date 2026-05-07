@@ -29,8 +29,8 @@ export default function DrawsShow({
         name: string;
         currency: string;
         monthly_amount: number | null;
-        spin_sound_url: string;
-        celebration_sound_url: string;
+        spin_sound_url: string | null;
+        celebration_sound_url: string | null;
     };
     draw: Draw;
 }) {
