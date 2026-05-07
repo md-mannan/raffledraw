@@ -26,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/somitis/{somiti}', [SomitiController::class, 'show'])->name('somitis.show');
         Route::get('/somitis/{somiti}/edit', [SomitiController::class, 'edit'])->name('somitis.edit');
         Route::put('/somitis/{somiti}', [SomitiController::class, 'update'])->name('somitis.update');
+        Route::delete('/somitis/{somiti}', [SomitiController::class, 'destroy'])->name('somitis.destroy');
 
         Route::scopeBindings()->group(function () {
             Route::get('/somitis/{somiti}/members', [MemberController::class, 'index'])->name('somitis.members.index');

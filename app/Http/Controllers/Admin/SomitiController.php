@@ -13,12 +13,18 @@ use App\Models\Member;
 use App\Models\Somiti;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SomitiController extends Controller
 {
+    protected function publicStorageUrl(string $path): string
+    {
+        return '/storage/'.ltrim($path, '/');
+    }
+
     public function index(Request $request): Response
     {
         $q = trim((string) $request->string('q'));
@@ -145,7 +151,7 @@ class SomitiController extends Controller
             ->map(fn (string $p) => [
                 'path' => $p,
                 'name' => basename($p),
-                'url' => $publicDisk->url($p),
+                'url' => $this->publicStorageUrl($p),
             ]);
 
         return Inertia::render('somitis/edit', [
@@ -160,8 +166,12 @@ class SomitiController extends Controller
             'sounds' => [
                 'options' => $soundFiles,
                 'defaults' => [
-                    'spin' => $publicDisk->url('audio/spin.mp3'),
-                    'celebration' => $publicDisk->url('audio/applause.mp3'),
+                    'spin' => $publicDisk->exists('audio/spin.mp3')
+                        ? $this->publicStorageUrl('audio/spin.mp3')
+                        : '/audio/spin.mp3',
+                    'celebration' => $publicDisk->exists('audio/applause.mp3')
+                        ? $this->publicStorageUrl('audio/applause.mp3')
+                        : '/audio/applause.mp3',
                 ],
             ],
         ]);
@@ -193,6 +203,26 @@ class SomitiController extends Controller
         ]);
 
         return redirect()->route('somitis.show', $somiti);
+    }
+
+    public function destroy(Request $request, Somiti $somiti)
+    {
+        DB::transaction(function () use ($somiti) {
+            // Important: `draws.winner_member_id` is `restrictOnDelete()`, while members are
+            // `cascadeOnDelete()` from somiti. Delete draws first to avoid FK violations.
+            $somiti->draws()->delete();
+
+            // These cascades handle contributions/draws too, but we keep explicit ordering
+            // for safety across different DB engines/settings.
+            $somiti->cycles()->delete();
+            $somiti->members()->delete();
+
+            $somiti->deleteOrFail();
+        });
+
+        return redirect()
+            ->route('somitis.index')
+            ->with('success', 'Somiti deleted.');
     }
 }
 

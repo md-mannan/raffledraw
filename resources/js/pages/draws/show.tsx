@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { Play, Trophy, Users } from 'lucide-react';
 import Heading from '@/components/heading';
@@ -114,17 +114,15 @@ export default function DrawsShow({
                             </Link>
                         </Button>
 
-                        <Form
-                            action={somitis.draws.destroy({ somiti: somiti.id, draw: draw.id }).url}
-                            method="delete"
-                            onSubmit={(e) => {
-                                if (!confirm('Delete this draw history? This cannot be undone.')) {
-                                    e.preventDefault();
-                                }
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (!confirm('Delete this draw history? This cannot be undone.')) return;
+                                router.delete(somitis.draws.destroy({ somiti: somiti.id, draw: draw.id }).url);
                             }}
                         >
-                            <Button variant="destructive">Delete</Button>
-                        </Form>
+                            Delete
+                        </Button>
                     </div>
                 </div>
 

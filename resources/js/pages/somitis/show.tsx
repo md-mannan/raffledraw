@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Calendar, Coins, Pencil, Sparkles, Trophy, Users } from 'lucide-react';
 import Heading from '@/components/heading';
 import SomitiSectionNav from '@/components/somiti-section-nav';
@@ -59,6 +59,15 @@ export default function SomitiShow({
                                     <Pencil className="mr-2 size-4" />
                                     Edit settings
                                 </Link>
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={() => {
+                                    if (!confirm('Delete this somiti and all its data? This cannot be undone.')) return;
+                                    router.delete(somitis.destroy(somiti.id).url);
+                                }}
+                            >
+                                Delete
                             </Button>
                             <Button asChild>
                                 <Link href={somitis.draws.run(somiti).url} prefetch>
